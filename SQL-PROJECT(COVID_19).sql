@@ -38,7 +38,7 @@ order by 1
 
 -- Looking at Mortality rate (Number of people dying from those infected)
 
-WITH CTE_Mortality AS (SELECT Distinct(location), max(cast (total_cases as int)) As Total_cases, Max(Cast(total_deaths as int)) As Total_deaths
+WITH Mortality AS (SELECT Distinct(location), max(cast (total_cases as int)) As Total_cases, Max(Cast(total_deaths as int)) As Total_deaths
 FROM CovidDeaths
 Group By Location) 
 Select *,
@@ -78,7 +78,7 @@ GROUP BY
 
 	--covid-19 Mortality rate around the world
 
-With Cte_CovidWorld AS (SELECT 
+With CovidWorld AS (SELECT 
     location, date, SUM(CAST(new_cases AS int)) OVER (PARTITION BY location ORDER BY date) AS Total_cases, 
     Total_deaths
 FROM 
@@ -94,7 +94,7 @@ GROUP BY
 
 -- Looking at Average Mortality Rate
 
-With Cte_CovidWorld AS (SELECT 
+WithCovidWorld AS (SELECT 
     location, date, SUM(CAST(new_cases AS int)) OVER (PARTITION BY location ORDER BY date) AS Total_cases, 
     Total_deaths
 FROM 
