@@ -1,0 +1,31 @@
+import os
+import shutil
+
+# Define the path to the directory containing the files to be sorted
+path = r"C:/Users/Pixels14/Desktop/DATA ANALYST/Python tutorial/"
+
+# Get the list of all files in the specified directory
+file_name = os.listdir(path)
+
+# Define folder names for different file types
+folder_names = ['csv', 'pictures', 'webpages', 'textfiles']
+
+# Create folders if they don't already exist
+for loop in range(0, 4):
+    if not os.path.exists(path + folder_names[loop]):
+        os.makedirs((path + folder_names[loop]))
+
+# Iterate through each file in the directory
+for file in file_name:
+    # Check if the file is a CSV file and move it to the 'csv' folder
+    if ".csv" in file and not os.path.exists(path + "csv/" + file):
+        shutil.move(path + file, path + "csv/" + file)
+    # Check if the file is an HTML file and move it to the 'webpages' folder
+    elif ".html" in file and not os.path.exists(path + "webpages/" + file):
+        shutil.move(path + file, path + "webpages/" + file)
+    # Check if the file is a JPG file and move it to the 'pictures' folder
+    elif ".jpg" in file and not os.path.exists(path + "pictures/" + file):
+        shutil.move(path + file, path + "pictures/" + file)
+    # Check if the file is a TXT file and move it to the 'textfiles' folder
+    elif ".txt" in file and not os.path.exists(path + "textfiles/" + file):
+        shutil.move(path + file, path + "textfiles/" + file)
