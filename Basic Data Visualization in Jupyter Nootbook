@@ -1,0 +1,37 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Read the CSV file into a DataFrame
+df = pd.read_csv(r"C:\Users\Pixels14\Desktop\DATA ANALYST\Portfolio Projects\Pandas\Ice Cream Ratings.csv")
+
+# Set the 'Date' column as the index
+df = df.set_index('Date')
+
+# Print available matplotlib styles
+print(plt.style.available)
+
+# Set the style of the plots to 'fivethirtyeight'
+plt.style.use('fivethirtyeight')
+
+# Plot a line chart for the entire DataFrame
+df.plot(kind='line', title='Ice Cream Ratings', xlabel='Daily Ratings', ylabel='Scores')
+
+# Plot a stacked bar chart for the DataFrame
+df.plot.bar(stacked=True)
+
+# Plot a histogram for each column in the DataFrame with 20 bins
+df.plot.hist(bins=20)
+
+# Plot a boxplot for the DataFrame
+df.boxplot()
+
+# Plot an area chart for the DataFrame with a specified figsize
+df.plot.area(figsize=(10, 5))
+
+# Plot a pie chart for the 'Flavor Rating' column with a specified figsize
+df.plot.pie(y='Flavor Rating', figsize=(10, 10))
+
+# Show the plots
+plt.show()
