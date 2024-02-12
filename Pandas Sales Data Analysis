@@ -1,0 +1,138 @@
+# Importing necessary libraries
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+
+# Setting the path to the folder containing sales data files
+path = r'C:\Users\Pixels14\Desktop\DATA ANALYST\Portfolio Projects\Pandas\Sales_Data'
+
+# Creating a list of file paths for all files in the specified folder
+files = [os.path.join(path, file) for file in os.listdir(path)]
+
+# Initializing an empty DataFrame
+df = pd.DataFrame()
+
+# Reading and merging all files into a single DataFrame
+for file in files:
+    data = pd.read_csv(file)
+    df = pd.concat([df, data])
+
+# Checking for completely empty rows
+empty_rows = df[df.isnull().all(axis=1)]
+
+# Displaying rows that are completely empty
+print("Rows that are completely empty:")
+print(empty_rows)
+
+# Dropping rows that are completely empty
+df = df.dropna(how='all')
+
+# Checking for non-numeric values in the 'Order ID' column
+non_numeric_order_ids = df['Order ID'].loc[pd.to_numeric(df['Order ID'], errors='coerce').isna()]
+
+# Displaying non-numeric Order IDs
+print("Non-numeric Order IDs:")
+print(non_numeric_order_ids)
+
+# Dropping rows with non-numeric values in the 'Order ID' column
+df = df.loc[~df['Order ID'].isin(non_numeric_order_ids)]
+
+# Splitting date into month, day, and time
+df['Order Date'] = pd.to_datetime(df['Order Date'], format='%m/%d/%y %H:%M')
+df['Month'] = df['Order Date'].dt.strftime('%B')
+df['Day'] = df['Order Date'].dt.strftime('%d')
+df['Time'] = df['Order Date'].dt.strftime('%H:%M')
+df = df.drop('Order Date', axis=1)
+
+# Creating a 'Purchase city' column from 'Purchase Address'
+df['Purchase city'] = df['Purchase Address'].str.split(',').str[1].str.strip()
+
+# Converting 'Quantity Ordered' and 'Price Each' to numeric types
+df['Quantity Ordered'] = pd.to_numeric(df['Quantity Ordered'])
+df['Price Each'] = pd.to_numeric(df['Price Each'])
+
+# Ordering by month and day
+month_order = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+               'September', 'October', 'November', 'December']
+df['Month'] = pd.Categorical(df['Month'], categories=month_order, ordered=True)
+df = df.sort_values(by=['Month', 'Day'])
+
+# Saving the DataFrame as a CSV file
+df.to_csv(r'C:\Users\Pixels14\Desktop\DATA ANALYST\Portfolio Projects\Pandas\Sales_Data\Sales_2019.csv', index=False)
+
+# Creating a 'Sales' column and finding the best month for sales
+df['Sales'] = df['Quantity Ordered'] * df['Price Each']
+monthly_sales = df.groupby('Month')['Sales'].sum()
+best_month = monthly_sales.idxmax()
+earnings_for_best_month = monthly_sales.max()
+print(f"The best month for sales was {best_month} with earnings of ${earnings_for_best_month:.2f}")
+
+# Plotting monthly sales
+ms = pd.DataFrame(monthly_sales)
+ms.plot(kind='bar')
+plt.xlabel('Month')
+plt.ylabel('Sales')
+plt.title('Monthly Sales')
+plt.show()
+
+# Finding the city with the highest sales
+city_sales = df.groupby('Purchase city')['Sales'].sum()
+best_city = city_sales.idxmax()
+sales_for_best_city = city_sales.max()
+print(f"The best city for sales was {best_city} with earnings of ${sales_for_best_city:.2f}")
+
+# Plotting city-wise sales
+bc = pd.DataFrame(city_sales)
+bc.plot(kind='bar')
+plt.xlabel('City')
+plt.ylabel('Sales')
+plt.title('City-wise Sales')
+plt.show()
+
+# Creating time windows and finding the period with the highest sales
+df['Time'] = pd.to_datetime(df['Time'])
+bins = pd.to_datetime(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'])
+labels = ['00:00-03:59', '04:00-07:59', '08:00-11:59', '12:00-15:59', '16:00-19:59', '20:00-23:59']
+df['Sales Time Window'] = pd.cut(df['Time'], bins=bins, labels=labels, include_lowest=True, right=False)
+sales_time = df.groupby('Sales Time Window')['Sales'].sum()
+best_sales_time = sales_time.idxmax()
+sales_for_best_time = sales_time.max()
+print(f"The best sales period was {best_sales_time} with earnings of ${sales_for_best_time:.2f}")
+
+# Plotting sales time windows
+st = pd.DataFrame(sales_time)
+st.plot(kind='bar')
+plt.xlabel('Sales Time Window')
+plt.ylabel('Sales')
+plt.title('Sales Time Windows')
+plt.show()
+
+# Finding order quantities by product and plotting
+product_order_quantity = df.groupby('Product')['Quantity Ordered'].sum()
+po = pd.DataFrame(product_order_quantity)
+po.plot(kind='bar')
+plt.xlabel('Product')
+plt.ylabel('Order Quantity')
+plt.title('Order Quantities by Product')
+plt.show()
+
+# Finding sales by product and plotting
+product_sales = df.groupby('Product')['Sales'].sum()
+ps = pd.DataFrame(product_sales)
+ps.plot(kind='bar')
+plt.xlabel('Product')
+plt.ylabel('Sales')
+plt.title('Sales by Product')
+plt.show()
+
+# Finding products most often sold together
+duplicate_data = df[df['Order ID'].duplicated(keep=False)]
+dd = duplicate_data
+dd['Grouped'] = dd.groupby('Order ID')['Product'].transform(lambda x: ' + '.join(x))
+dd = dd[['Order ID', 'Grouped']].drop_duplicates()
+pairs = dd.groupby('Grouped')['Grouped'].count()
+p = pd.DataFrame(pairs)
+p['Order Quantity'] = p['Grouped']
+p = p.drop('Grouped', axis=1)
+p = p.sort_values(by='Order Quantity', ascending=False)
+print(p)
